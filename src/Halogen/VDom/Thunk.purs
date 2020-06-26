@@ -14,11 +14,12 @@ import Prelude
 
 import Data.Function.Uncurried as Fn
 import Effect.Uncurried as EFn
-import Halogen.VDom as V
+import Halogen.VDom (Machine, Step, VDom) as V
+import Halogen.VDom.DOM (VDomSpec, buildVDom) as V
+import Halogen.VDom.HostConfig (class HostConfig)
 import Halogen.VDom.Machine as M
 import Halogen.VDom.Util as Util
 import Unsafe.Coerce (unsafeCoerce)
-import Web.DOM.Node (Node)
 
 foreign import data ThunkArg ∷ Type
 
@@ -86,24 +87,25 @@ unsafeEqThunk = Fn.mkFn2 \(Thunk a1 b1 _ d1) (Thunk a2 b2 _ d2) →
   Fn.runFn2 Util.refEq b1 b2 &&
   Fn.runFn2 b1 d1 d2
 
-type ThunkState f i a w =
+type ThunkState node f i a w =
   { thunk ∷ Thunk f i
-  , vdom ∷ M.Step (V.VDom a w) Node
+  , vdom ∷ M.Step (V.VDom a w) node
   }
 
 buildThunk
-  ∷ ∀ f i a w
-  . (f i → V.VDom a w)
-  → V.VDomSpec a w
-  → V.Machine (Thunk f i) Node
+  ∷ ∀ f i a w node
+  . HostConfig node
+  => (f i → V.VDom a w)
+  → V.VDomSpec node a w
+  → V.Machine (Thunk f i) node
 buildThunk toVDom = renderThunk
   where
-  renderThunk ∷ V.VDomSpec a w → V.Machine (Thunk f i) Node
+  renderThunk ∷ V.VDomSpec node a w → V.Machine (Thunk f i) node
   renderThunk spec = EFn.mkEffectFn1 \t → do
     vdom ← EFn.runEffectFn1 (V.buildVDom spec) (toVDom (runThunk t))
     pure $ M.mkStep $ M.Step (M.extract vdom) { thunk: t, vdom } patchThunk haltThunk
 
-  patchThunk ∷ EFn.EffectFn2 (ThunkState f i a w) (Thunk f i) (V.Step (Thunk f i) Node)
+  patchThunk ∷ EFn.EffectFn2 (ThunkState node f i a w) (Thunk f i) (V.Step (Thunk f i) node)
   patchThunk = EFn.mkEffectFn2 \state t2 → do
     let { vdom: prev, thunk: t1 } = state
     if Fn.runFn2 unsafeEqThunk t1 t2
@@ -112,6 +114,6 @@ buildThunk toVDom = renderThunk
         vdom ← EFn.runEffectFn2 M.step prev (toVDom (runThunk t2))
         pure $ M.mkStep $ M.Step (M.extract vdom) { vdom, thunk: t2 } patchThunk haltThunk
 
-  haltThunk ∷ EFn.EffectFn1 (ThunkState f i a w) Unit
+  haltThunk ∷ EFn.EffectFn1 (ThunkState node f i a w) Unit
   haltThunk = EFn.mkEffectFn1 \state → do
     EFn.runEffectFn1 M.halt state.vdom

@@ -12,13 +12,13 @@ You can edit this file as you like.
   , "foreign-object"
   , "js-timers"
   , "maybe"
+  , "nullable"
   , "prelude"
   , "psci-support"
   , "refs"
   , "tuples"
   , "unsafe-coerce"
-  , "web-html"
   ]
 , packages = ./packages.dhall
-, sources = [ "src/**/*.purs", "test/**/*.purs" ]
+, sources = [ "src/**/*.purs" ]
 }
