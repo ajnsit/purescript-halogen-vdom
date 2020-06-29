@@ -89,7 +89,7 @@ patchText = EFn.mkEffectFn2 \state vdom → do
       EFn.runEffectFn1 build vdom
 
 haltText ∷ ∀ a w node. HostConfig node => EFn.EffectFn1 (TextState node a w) Unit
-haltText = EFn.mkEffectFn1 \{ node } → do
+haltText = EFn.mkEffectFn1 \ { node } → do
   parent ← EFn.runEffectFn1 parentNode node
   EFn.runEffectFn2 removeChild node parent
 
@@ -171,7 +171,7 @@ patchElem = EFn.mkEffectFn2 \state vdom → do
       EFn.runEffectFn1 build vdom
 
 haltElem ∷ ∀ a w node. HostConfig node => EFn.EffectFn1 (ElemState node a w) Unit
-haltElem = EFn.mkEffectFn1 \{ node, attrs, children } → do
+haltElem = EFn.mkEffectFn1 \ { node, attrs, children } → do
   parent ← EFn.runEffectFn1 parentNode node
   EFn.runEffectFn2 removeChild node parent
   EFn.runEffectFn2 Util.forEachE children halt
@@ -259,7 +259,7 @@ patchKeyed = EFn.mkEffectFn2 \state vdom → do
       EFn.runEffectFn1 build vdom
 
 haltKeyed ∷ ∀ a w node. HostConfig node => EFn.EffectFn1 (KeyedState node a w) Unit
-haltKeyed = EFn.mkEffectFn1 \{ node, attrs, children } → do
+haltKeyed = EFn.mkEffectFn1 \ { node, attrs, children } → do
   parent ← EFn.runEffectFn1 parentNode node
   EFn.runEffectFn2 removeChild node parent
   EFn.runEffectFn2 Util.forInE children (EFn.mkEffectFn2 \_ s → EFn.runEffectFn1 halt s)
@@ -295,7 +295,7 @@ patchWidget = EFn.mkEffectFn2 \state vdom → do
       EFn.runEffectFn1 build vdom
 
 haltWidget ∷ forall a w node. EFn.EffectFn1 (WidgetState node a w) Unit
-haltWidget = EFn.mkEffectFn1 \{ widget } → do
+haltWidget = EFn.mkEffectFn1 \ { widget } → do
   EFn.runEffectFn1 halt widget
 
 eqElemSpec ∷ Fn.Fn4 (Maybe Namespace) ElemName (Maybe Namespace) ElemName Boolean
