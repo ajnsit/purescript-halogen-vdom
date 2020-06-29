@@ -65,7 +65,7 @@ thunk2 =
       Fn.runFn2 Util.refEq a._2 b._2
   in
     Fn.mkFn3 \f a b →
-      Fn.runFn4 thunk (unsafeThunkId f) eqFn (\{ _1, _2 } → f _1 _2) { _1: a, _2: b }
+      Fn.runFn4 thunk (unsafeThunkId f) eqFn (\ { _1, _2 } → f _1 _2) { _1: a, _2: b }
 
 thunk3 ∷ ∀ a b c f i. Fn.Fn4 (a → b → c → f i) a b c (Thunk f i)
 thunk3 =
@@ -76,7 +76,7 @@ thunk3 =
       Fn.runFn2 Util.refEq a._3 b._3
   in
     Fn.mkFn4 \f a b c →
-      Fn.runFn4 thunk (unsafeThunkId f) eqFn (\{ _1, _2, _3 } → f _1 _2 _3) { _1: a, _2: b, _3: c }
+      Fn.runFn4 thunk (unsafeThunkId f) eqFn (\ { _1, _2, _3 } → f _1 _2 _3) { _1: a, _2: b, _3: c }
 
 runThunk ∷ ∀ f i. Thunk f i → f i
 runThunk (Thunk _ _ render arg) = render arg
