@@ -14,7 +14,7 @@ import Data.Function.Uncurried as Fn
 import Effect.Uncurried as EFn
 import Halogen.VDom (Machine, Step, VDom) as V
 import Halogen.VDom.DOM (VDomSpec, buildVDom) as V
-import Halogen.VDom.HostConfig (class HostConfig)
+import Halogen.VDom.HostConfig (HostConfig)
 import Halogen.VDom.Machine as M
 import Halogen.VDom.Util as Util
 import Unsafe.Coerce (unsafeCoerce)
@@ -85,16 +85,16 @@ type ThunkState node x a w =
   }
 
 buildThunk
-  ∷ ∀ x a w node
-  . HostConfig node
-  => (x → V.VDom a w)
+  ∷ ∀ x a w evt node
+  . HostConfig evt node
+  -> (x → V.VDom a w)
   → V.VDomSpec node a w
   → V.Machine (Thunk x) node
-buildThunk toVDom = renderThunk
+buildThunk hconf toVDom = renderThunk
   where
   renderThunk ∷ V.VDomSpec node a w → V.Machine (Thunk x) node
   renderThunk spec = EFn.mkEffectFn1 \t → do
-    vdom ← EFn.runEffectFn1 (V.buildVDom spec) (toVDom (runThunk t))
+    vdom ← EFn.runEffectFn1 (V.buildVDom hconf spec) (toVDom (runThunk t))
     pure $ M.mkStep $ M.Step (M.extract vdom) { thunk: t, vdom } patchThunk haltThunk
 
   patchThunk ∷ EFn.EffectFn2 (ThunkState node x a w) (Thunk x) (V.Step (Thunk x) node)
